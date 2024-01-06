@@ -8,20 +8,24 @@ import {XVGMetadata} from "./XVGMetadata.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 
 contract XVG is ERC721, Owned, XVGMetadata, XVGStorage {
-    string private constant description = "";
+    string private constant description = "placeholder";
+    bool public MINT_OPEN;
 
-    error InsufficientFunds();
+    error InvalidMessageValue();
+    error MintNotOpen();
     error MaxSupplyReached();
 
     constructor() Owned(msg.sender) ERC721("XVG", "XVG") {
-        for (uint256 id = 1; id < 23; id++) {
-            _mint(msg.sender, id);
+        for (uint256 id = 1; id <= 23; id++) {
+            _mint(address(this), id);
         }
     }
 
     function mint(uint256 tokenId) public payable {
-        if (msg.value < xvgMeta[tokenId].price) revert InsufficientFunds();
-        _mint(msg.sender, tokenId);
+        if (!MINT_OPEN) revert MintNotOpen();
+        if (xvgMeta[tokenId].price == 0) revert MintNotOpen();
+        if (msg.value != xvgMeta[tokenId].price) revert InvalidMessageValue();
+        transferFrom(address(this), msg.sender, tokenId);
     }
 
     /* -------------------------------------------------------------------------- */
@@ -60,12 +64,16 @@ contract XVG is ERC721, Owned, XVGMetadata, XVGStorage {
         _writeXVG(id, data, size);
     }
 
-    function writeXVGMeta(
-        uint256 id,
-        string memory name,
-        uint256 price
-    ) external onlyOwner {
-        _writeXVGMeta(id, name, price);
+    function writeXVGMeta(uint256 id, string memory name) external onlyOwner {
+        _writeXVGMeta(id, name);
+    }
+
+    function writeXVGPrice(uint256 id, uint256 price) external onlyOwner {
+        _writeXVGPrice(id, price);
+    }
+
+    function setMintOpen(bool open) external onlyOwner {
+        MINT_OPEN = open;
     }
 
     function withdraw(address to) external onlyOwner {

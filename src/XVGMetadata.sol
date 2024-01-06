@@ -8,12 +8,11 @@ contract XVGMetadata {
     }
     mapping(uint256 => XVGMeta) public xvgMeta;
 
-    function _writeXVGMeta(
-        uint256 id,
-        string memory name,
-        uint256 price
-    ) internal {
+    function _writeXVGMeta(uint256 id, string memory name) internal {
         xvgMeta[id].name = name;
+    }
+
+    function _writeXVGPrice(uint256 id, uint256 price) internal {
         xvgMeta[id].price = price;
     }
 }
