@@ -11,15 +11,11 @@ contract XVGStorage {
     }
     mapping(uint256 => XVGAsset) public xvgData;
 
-    function _writeXVG(
-        uint256 id,
-        bytes calldata zippedSVGData,
-        uint32 size
-    ) internal {
+    function _writeXVG(uint256 id, bytes calldata data, uint32 size) internal {
         xvgData[id].size = size;
 
         uint32 partSize = 24_000;
-        uint32 zippedSize = uint32(zippedSVGData.length);
+        uint32 zippedSize = uint32(data.length);
         uint32 numParts = (zippedSize + partSize - 1) / partSize;
 
         for (uint32 i; i < numParts; i++) {
@@ -28,7 +24,7 @@ contract XVGStorage {
                 ? zippedSize
                 : start + partSize;
             xvgData[id].slots.push(
-                SSTORE2.write(_sliceBytes(zippedSVGData, start, end))
+                SSTORE2.write(_sliceBytes(data, start, end))
             );
         }
     }

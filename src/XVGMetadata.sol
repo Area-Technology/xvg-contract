@@ -3,25 +3,17 @@ pragma solidity ^0.8.20;
 
 contract XVGMetadata {
     struct XVGMeta {
-        uint256 maxSupply;
-        uint256 mintFee;
+        uint256 price;
         string name;
-        string description;
     }
     mapping(uint256 => XVGMeta) public xvgMeta;
 
     function _writeXVGMeta(
         uint256 id,
         string memory name,
-        string memory description,
-        uint256 maxSupply,
-        uint256 mintFee
+        uint256 price
     ) internal {
-        xvgMeta[id] = XVGMeta({
-            name: name,
-            description: description,
-            maxSupply: maxSupply,
-            mintFee: mintFee
-        });
+        xvgMeta[id].name = name;
+        xvgMeta[id].price = price;
     }
 }

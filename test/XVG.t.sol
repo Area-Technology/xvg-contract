@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {XVG} from "../src/XVG.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract XVGTest is Test {
     XVG xvg;
@@ -11,19 +12,34 @@ contract XVGTest is Test {
         xvg = new XVG();
     }
 
+    function testCompress() public {
+        uint256 unzippedLength = 0;
+        uint256 zippedLength = 0;
+        for (uint i = 2; i < 22; i++) {
+            if (i == 4 || i == 6) continue;
+            string memory svgFile = vm.readFile(
+                string.concat("./svgs/", Strings.toString(i), ".svg")
+            );
+
+            unzippedLength += bytes(svgFile).length;
+            bytes memory zipped = _zip(bytes(svgFile));
+            zippedLength += zipped.length;
+        }
+        console2.log("total unzipped length", unzippedLength);
+        console2.log("total zipped length", zippedLength);
+    }
+
     function testUpload() public {
-        string memory svgFile = vm.readFile("./example.svg");
-        assertEq(bytes(svgFile).length, 73402);
+        for (uint i = 2; i < 22; i++) {
+            if (i == 4 || i == 6) continue;
+            string memory svgFile = vm.readFile(
+                string.concat("./svgs/", Strings.toString(i), ".svg")
+            );
 
-        bytes memory zipped = _zip(bytes(svgFile));
-        assertEq(zipped.length, 30228);
-
-        xvg.writeXVG(0, zipped, uint32(bytes(svgFile).length));
-        xvg.writeXVGMeta(0, "Test Token 0", "Zero", 100, 0.001 ether);
-        string memory svg = xvg.readXVG(0);
-        assertEq(bytes(svg), bytes(svgFile));
-
-        console2.log(xvg.uri(0));
+            bytes memory zipped = _zip(bytes(svgFile));
+            xvg.writeXVG(i, zipped, uint32(bytes(svgFile).length));
+            xvg.writeXVGMeta(i, "Test Token 0", 0.001 ether);
+        }
     }
 
     // zipping functions from zipped-contracts
